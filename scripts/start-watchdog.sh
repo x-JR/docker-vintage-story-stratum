@@ -1,11 +1,5 @@
 #!/bin/bash
-if [ -f "${DATA_DIR}/StratumServer.dll" ]; then
-  killpid="$(pidof dotnet)"
-elif [ -f "${DATA_DIR}/VintagestoryServer.exe" ]; then
-  killpid="$(pidof mono)"
-elif [ -f "${DATA_DIR}/VintagestoryServer" ]; then
-  killpid="$(pidof VintagestoryServer)"
-fi
+killpid="$(pidof StratumServer)"
 
 while true
 do
