@@ -55,6 +55,30 @@ elif [ "${LAT_V}" == "${CUR_V}" ]; then
   echo "---Vintage Story version up-to-date---"
 fi
 
+echo "---Checking Stratum---"
+STRATUM_JSON="$(wget -qO- https://api.github.com/repos/trevorftp/Stratum/releases/latest)"
+STRATUM_V="$(echo "${STRATUM_JSON}" | jq -r '.tag_name')"
+STRATUM_DL_URL="$(echo "${STRATUM_JSON}" | jq -r '.assets[] | select(.name | contains("linux-x64")) | .browser_download_url')"
+CUR_STRATUM_V="$(find ${DATA_DIR} -maxdepth 1 -name "stratum-installed-*" | sed 's/.*stratum-installed-//')"
+if [ -z "${STRATUM_V}" ] || [ "${STRATUM_V}" = "null" ]; then
+  echo "---Can't get latest Stratum version, continuing without update---"
+elif [ -z "${CUR_STRATUM_V}" ] || [ "${CUR_STRATUM_V}" != "${STRATUM_V}" ]; then
+  echo "---Downloading Stratum ${STRATUM_V}---"
+  rm -f ${DATA_DIR}/stratum-installed-*
+  if wget -q --show-progress --progress=bar:force:noscroll -O /tmp/stratum.zip "${STRATUM_DL_URL}" ; then
+    echo "---Extracting Stratum ${STRATUM_V}---"
+    unzip -o /tmp/stratum.zip -d ${DATA_DIR}/
+    rm -f /tmp/stratum.zip
+    touch ${DATA_DIR}/stratum-installed-${STRATUM_V}
+    echo "---Stratum ${STRATUM_V} installed---"
+  else
+    echo "---Can't download Stratum, putting server into sleep mode!---"
+    sleep infinity
+  fi
+else
+  echo "---Stratum version up-to-date: ${STRATUM_V}---"
+fi
+
 echo "---Preparing Server---"
 chmod -R ${DATA_PERM} ${DATA_DIR}
 echo "---Checking for old logs---"
@@ -63,7 +87,12 @@ screen -wipe 2&>/dev/null
 
 echo "---Starting Server---"
 cd ${DATA_DIR}
-if [ -f "${DATA_DIR}/VintagestoryServer.exe" ]; then
+if [ -f "${DATA_DIR}/StratumServer.dll" ]; then
+  screen -S VintageStory -L -Logfile ${DATA_DIR}/masterLog.0 -d -m dotnet StratumServer.dll --dataPath ${DATA_DIR}/data --stratum-skip-bootstrap ${GAME_PARAMS}
+  sleep 2
+  screen -S watchdog -d -m /opt/scripts/start-watchdog.sh
+  tail -f ${DATA_DIR}/masterLog.0
+elif [ -f "${DATA_DIR}/VintagestoryServer.exe" ]; then
   screen -S VintageStory -L -Logfile ${DATA_DIR}/masterLog.0 -d -m mono VintagestoryServer.exe --dataPath ${DATA_DIR}/data ${GAME_PARAMS}
   sleep 2
   screen -S watchdog -d -m /opt/scripts/start-watchdog.sh
