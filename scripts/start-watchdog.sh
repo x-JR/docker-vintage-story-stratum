@@ -1,9 +1,12 @@
 #!/bin/bash
-killpid="$(pidof StratumServer)"
+killpid="$(pgrep -n -f "${DATA_DIR}/[S]tratumServer(\\.dll)?")"
 
-while true
-do
-	tail --pid=$killpid -f /dev/null
-	kill "$(pidof tail)"
-exit 0
-done
+if [ -z "${killpid}" ]; then
+	exit 1
+fi
+
+tail --pid="${killpid}" -f /dev/null
+log_pid="$(pgrep -n -f "tail -f ${DATA_DIR}/[m]asterLog.0")"
+if [ -n "${log_pid}" ]; then
+	kill "${log_pid}"
+fi

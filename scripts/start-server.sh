@@ -36,15 +36,25 @@ find ${DATA_DIR} -name "masterLog.*" -exec rm -f {} \;
 screen -wipe 2&>/dev/null
 
 echo "---Starting Server---"
-cd ${DATA_DIR}
-if [ -f "${DATA_DIR}/StratumServer" ]; then
+cd "${DATA_DIR}"
+if [ -f "${DATA_DIR}/StratumServer.dll" ]; then
+  echo "---Launching Stratum through the .NET runtime---"
+  server_command=(dotnet "${DATA_DIR}/StratumServer.dll")
+elif [ -x "${DATA_DIR}/StratumServer" ]; then
   echo "---Launching Stratum (StratumServer)---"
-  screen -S VintageStory -L -Logfile ${DATA_DIR}/masterLog.0 -d -m ${DATA_DIR}/StratumServer --dataPath ${DATA_DIR}/data ${GAME_PARAMS}
-  sleep 2
-  screen -S watchdog -d -m /opt/scripts/start-watchdog.sh
-  echo "---Stratum server started, tailing log---"
-  tail -f ${DATA_DIR}/masterLog.0
+  server_command=("${DATA_DIR}/StratumServer")
 else
-  echo "---Can't find StratumServer executable, putting container into sleep mode!---"
+  echo "---Can't find a runnable StratumServer entry point, putting container into sleep mode!---"
   sleep infinity
 fi
+
+screen -S VintageStory -L -Logfile "${DATA_DIR}/masterLog.0" -d -m "${server_command[@]}" --dataPath "${DATA_DIR}/data" ${GAME_PARAMS}
+sleep 2
+if ! pgrep -f "${DATA_DIR}/[S]tratumServer(\\.dll)?" >/dev/null; then
+  echo "---Stratum failed to start---"
+  cat "${DATA_DIR}/masterLog.0"
+  exit 1
+fi
+screen -S watchdog -d -m /opt/scripts/start-watchdog.sh
+echo "---Stratum server started, tailing log---"
+tail -f "${DATA_DIR}/masterLog.0"

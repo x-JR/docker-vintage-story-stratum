@@ -26,9 +26,11 @@ chown -R ${UID}:${GID} ${DATA_DIR}
 
 echo "---Starting...---"
 term_handler() {
-    killpid="$(pidof StratumServer)"
+    killpid="$(pgrep -n -f "${DATA_DIR}/[S]tratumServer(\\.dll)?")"
 	su $USER -c "screen -S VintageStory -X stuff '/stop^M'" >/dev/null
-	tail --pid=$killpid -f /dev/null
+	if [ -n "${killpid}" ]; then
+		tail --pid="${killpid}" -f /dev/null
+	fi
 }
 
 trap 'kill ${!}; term_handler' SIGTERM
