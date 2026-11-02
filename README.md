@@ -17,9 +17,14 @@ UPDATE NOTICE: The container will check on every start/restart if there is a new
 | UMASK | User file permission mask for newly created files | 000 |
 | DATA_PERM | Data permissions for main storage folder | 770 |
 
+## GPU requirements
+
+This image includes CUDA 12.9.1 and cuDNN 9. The host must have a compatible NVIDIA driver and the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed.
+
 ## Run example
-```
+```bash
 docker run --name VintageStory -d \
+	--gpus all \
 	-p 42420:42420 \
 	--env 'VS_CHANNEL=stable' \
 	--env 'UID=99' \

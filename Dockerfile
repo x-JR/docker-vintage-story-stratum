@@ -1,13 +1,24 @@
-FROM ich777/mono-baseimage
+FROM mcr.microsoft.com/dotnet/runtime:10.0-noble AS dotnet-runtime
+
+FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04
 
 LABEL org.opencontainers.image.authors="admin@minenet.at"
 LABEL org.opencontainers.image.source="https://github.com/ich777/docker-vintage-story"
 
-RUN wget -q -O /tmp/packages-microsoft-prod.deb https://packages.microsoft.com/config/debian/13/packages-microsoft-prod.deb && \
-	dpkg -i /tmp/packages-microsoft-prod.deb && \
-	apt-get update && \
-	apt-get -y install --no-install-recommends curl screen jq unzip dotnet-runtime-10.0 && \
-	rm -rf /var/lib/apt/lists/* /tmp/packages-microsoft-prod.deb
+COPY --from=dotnet-runtime /usr/share/dotnet /usr/share/dotnet
+
+RUN apt-get update && \
+	apt-get -y install --no-install-recommends ca-certificates curl jq locales mono-complete procps screen unzip wget && \
+	ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet && \
+	echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+	locale-gen && \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/*
+
+ENV DOTNET_ROOT=/usr/share/dotnet
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 ENV DATA_DIR="/vintagestory"
 ENV VS_CHANNEL="stable"
