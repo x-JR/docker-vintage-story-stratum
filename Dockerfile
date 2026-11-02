@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.source="https://github.com/ich777/docker-vintage-
 COPY --from=dotnet-runtime /usr/share/dotnet /usr/share/dotnet
 
 RUN apt-get update && \
-	apt-get -y install --no-install-recommends ca-certificates curl jq locales mono-complete procps screen unzip wget && \
+	apt-get -y install --no-install-recommends ca-certificates curl jq libc6 libgcc-s1 libicu74 libssl3 libstdc++6 locales mono-complete procps screen tzdata unzip wget zlib1g && \
 	ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet && \
 	echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
 	locale-gen && \
