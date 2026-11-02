@@ -24,7 +24,13 @@ else
 fi
 
 echo "---Preparing Server---"
-chmod -R ${DATA_PERM} ${DATA_DIR}
+permission_probe="$(find "${DATA_DIR}" -mindepth 1 -type f -print -quit)"
+if chmod "${DATA_PERM}" -- "${DATA_DIR}" 2>/dev/null && \
+   { [ -z "${permission_probe}" ] || chmod "${DATA_PERM}" -- "${permission_probe}" 2>/dev/null; }; then
+  chmod -R "${DATA_PERM}" "${DATA_DIR}"
+else
+  echo "---The data filesystem does not allow chmod; preserving existing permissions---"
+fi
 echo "---Checking for old logs---"
 find ${DATA_DIR} -name "masterLog.*" -exec rm -f {} \;
 screen -wipe 2&>/dev/null

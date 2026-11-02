@@ -27,8 +27,8 @@ docker run --name VintageStory -d \
 	--gpus all \
 	-p 42420:42420 \
 	--env 'VS_CHANNEL=stable' \
-	--env 'UID=99' \
-	--env 'GID=100' \
+	--env 'UID=1000' \
+	--env 'GID=1000' \
 	--env 'UMASK=000' \
 	--env 'DATA_PERM=770' \
 	--volume /path/to/vintagestory:/vintagestory \
