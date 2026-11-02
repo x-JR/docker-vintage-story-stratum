@@ -43,6 +43,11 @@ if [ -f "${DATA_DIR}/StratumServer.dll" ]; then
 elif [ -x "${DATA_DIR}/StratumServer" ]; then
   echo "---Launching Stratum (StratumServer)---"
   server_command=("${DATA_DIR}/StratumServer")
+elif [ -f "${DATA_DIR}/StratumServer" ]; then
+  echo "---Copying StratumServer to an executable filesystem---"
+  cp "${DATA_DIR}/StratumServer" /tmp/StratumServer
+  chmod 700 /tmp/StratumServer
+  server_command=(/tmp/StratumServer)
 else
   echo "---Can't find a runnable StratumServer entry point, putting container into sleep mode!---"
   sleep infinity
@@ -50,7 +55,7 @@ fi
 
 screen -S VintageStory -L -Logfile "${DATA_DIR}/masterLog.0" -d -m "${server_command[@]}" --dataPath "${DATA_DIR}/data" ${GAME_PARAMS}
 sleep 2
-if ! pgrep -f "${DATA_DIR}/[S]tratumServer(\\.dll)?" >/dev/null; then
+if ! pgrep -f "/[S]tratumServer(\\.dll)?" >/dev/null; then
   echo "---Stratum failed to start---"
   cat "${DATA_DIR}/masterLog.0"
   exit 1

@@ -1,5 +1,5 @@
 #!/bin/bash
-killpid="$(pgrep -n -f "${DATA_DIR}/[S]tratumServer(\\.dll)?")"
+killpid="$(pgrep -n -f "/[S]tratumServer(\\.dll)?")"
 
 if [ -z "${killpid}" ]; then
 	exit 1

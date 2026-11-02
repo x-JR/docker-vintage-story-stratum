@@ -1,9 +1,9 @@
 #!/bin/bash
 echo "---Ensuring UID: ${UID} matches user---"
-usermod -u ${UID} ${USER}
+usermod -o -u "${UID}" "${USER}"
 echo "---Ensuring GID: ${GID} matches user---"
-groupmod -g ${GID} ${USER} > /dev/null 2>&1 ||:
-usermod -g ${GID} ${USER}
+groupmod -o -g "${GID}" "${USER}" > /dev/null 2>&1 ||:
+usermod -g "${GID}" "${USER}"
 echo "---Setting umask to ${UMASK}---"
 umask ${UMASK}
 
@@ -26,7 +26,7 @@ chown -R ${UID}:${GID} ${DATA_DIR}
 
 echo "---Starting...---"
 term_handler() {
-    killpid="$(pgrep -n -f "${DATA_DIR}/[S]tratumServer(\\.dll)?")"
+    killpid="$(pgrep -n -f "/[S]tratumServer(\\.dll)?")"
 	su $USER -c "screen -S VintageStory -X stuff '/stop^M'" >/dev/null
 	if [ -n "${killpid}" ]; then
 		tail --pid="${killpid}" -f /dev/null
